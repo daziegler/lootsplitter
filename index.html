@@ -1,0 +1,111 @@
+<html>
+<head>
+	<style>
+		body {
+			margin: 0 auto;
+			max-width: 300px;
+		}
+		
+		label {
+			flex: 25px;
+		}
+		
+		input {
+			flex: 75px;
+		}
+		
+		.form-group {
+			display: flex;
+			flex: 1 1 auto;
+			padding: 10px;
+		}
+	</style>
+	<script type="text/javascript">
+	
+	window.currencyOrder = {
+		1: {name: 'pp', factor: 10 * 10 *10},
+		2: {name: 'gp', factor: 10 * 10},
+		3: {name: 'ep', factor: 10 * 5},
+		4: {name: 'sp', factor: 10},
+		5: {name: 'cp', factor: 1}
+	};
+		
+	function calcLoot() {
+		let valueInCp = 0;
+		for (const id in window.currencyOrder) {
+			let currencyName = window.currencyOrder[id]['name'];
+			let currencyFactor = window.currencyOrder[id]['factor'];
+			let currencyField = document.querySelector('#' + currencyName);
+			let currencyFieldValue = currencyField.value;
+			if (currencyFieldValue) {
+				valueInCp += currencyFieldValue * currencyFactor;
+			}
+		}
+		let formattedValue = formatValueForPrint(valueInCp);
+		printResult(formattedValue);
+	}
+	
+	function formatValueForPrint(valueInCp) {	
+		let playerCount = document.querySelector('#playercount').value;
+		let unsplitCp = valueInCp % playerCount;
+		let valueInCpPerPlayer = (valueInCp - unsplitCp) / playerCount;
+
+		let formattedResultText = '';
+		let remainingValue = valueInCpPerPlayer;
+		for (const id in window.currencyOrder) {
+			let currencyName = window.currencyOrder[id]['name'];
+			let currencyFactor = window.currencyOrder[id]['factor'];
+			let valueInGivenCurrency = Math.floor(remainingValue / currencyFactor);
+			if (valueInGivenCurrency > 0) {
+				remainingValue -= (valueInGivenCurrency * currencyFactor);
+				if (formattedResultText !== '') {
+					formattedResultText += ', ';
+				}
+				formattedResultText += valueInGivenCurrency + currencyName;
+			}
+		}
+		
+		if (unsplitCp > 0) {
+			formattedResultText += ' with ' + unsplitCp + 'cp leftover';
+		}
+		
+		return 'Pro Person: ' + formattedResultText;
+	}
+
+	function printResult(formattedResultText) {
+		let resultTag = document.createElement("p");
+		let resultTextNode = document.createTextNode(formattedResultText);
+		resultTag.appendChild(resultTextNode);
+		document.querySelector('#results').appendChild(resultTag);
+	}	
+	</script>
+</head>
+<body>
+	<div class="form-group">
+		<label>Playercount</label>
+		<input type="number" id="playercount" value="5" min="1"/>
+	</div>
+	<div class="form-group">
+		<label>Platin</label>
+		<input type="number" id="pp" min="0"/>
+	</div>
+	<div class="form-group">
+		<label>Gold</label>
+		<input type="number" id="gp" min="0"/>
+	</div>
+	<div class="form-group">
+		<label>Electrum</label>
+		<input type="number" id="ep" min="0"/>
+	</div>
+	<div class="form-group">
+		<label>Silver</label>
+		<input type="number" id="sp" min="0"/>
+	</div>
+	<div class="form-group">
+		<label>Copper</label>
+		<input type="number" id="cp" min="0"/>
+	</div>
+	<button onclick="calcLoot()">Split dat loot!</button>
+	<div id="results"></div>
+</body>
+</html>
